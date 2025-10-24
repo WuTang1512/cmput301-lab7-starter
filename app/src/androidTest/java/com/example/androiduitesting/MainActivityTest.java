@@ -2,6 +2,8 @@ package com.example.androiduitesting;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -12,12 +14,17 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -66,5 +73,86 @@ public class MainActivityTest {
         onData(is(instanceOf(String.class)))
                 .inAdapterView(withId(R.id.city_list))
                 .atPosition(0).check(matches((withText("Edmonton"))));
+    }
+
+    @Test
+    public void testSwitchToShowActivity() {
+        Intents.init();
+        // Add a city
+        onView(withId(R.id.button_add)).perform(click());
+        onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Calgary"));
+        onView(withId(R.id.button_confirm)).perform(click());
+
+        // Click on newly created city
+        onData(is("Calgary")).inAdapterView(withId(R.id.city_list)).perform(click());
+
+        // Checks if correctly switched to ShowActivity
+        intended(hasComponent(ShowActivity.class.getName()));
+
+        Intents.release();
+    }
+
+    @Test
+    public void testConsistentCityName() {
+        // Add a city
+        onView(withId(R.id.button_add)).perform(click());
+        onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Vancouver"));
+        onView(withId(R.id.button_confirm)).perform(click());
+
+        // Click on newly created city
+        onData(is("Vancouver")).inAdapterView(withId(R.id.city_list)).perform(click());
+
+        // Check to see if specific city is displayed in ShowActivity
+        onView(withId(R.id.cityName)).check(matches(withText("Vancouver")));
+
+        // Click on back button
+        onView(withId(R.id.backButton)).perform(click());
+
+        // Check to see if specific city is still displayed in MainActivity
+        onView(withId(R.id.city_list)).check(matches(withText("Vancouver")));
+
+        onView(withId(R.id.button_clear)).perform(click());
+    }
+
+    @Test
+    public void testMultipleAddAndSwitch() {
+        // Add a few cities
+        ArrayList<String> cities = new ArrayList<String>();
+        cities.add("Calgary");
+        cities.add("Edmonton");
+        cities.add("Vancouver");
+
+        // adding multiple cities to the list
+        for (String city : cities) {
+            onView(withId(R.id.button_add)).perform(click());
+            onView(withId(R.id.editText_name)).perform(ViewActions.typeText(city));
+            onView(withId(R.id.button_confirm)).perform(click());
+        }
+
+        // checking to see if multiple cities stay consistent and that the Activity has changed to ShowActivity
+        for (String city : cities) {
+            // Clicking on the city
+            onData(is(city)).inAdapterView(withId(R.id.city_list)).perform(click());
+
+            // Check to see if the Activity has changed to ShowActivity
+            intended(hasComponent(ShowActivity.class.getName()));
+
+            // Check to see if all cities are displayed in ShowActivity
+            onView(withId(R.id.cityName)).check(matches(withText(cities.get(0))));
+            onView(withId(R.id.cityName)).check(matches(withText(cities.get(1))));
+            onView(withId(R.id.cityName)).check(matches(withText(cities.get(2))));
+
+            // Click on back button
+            onView(withId(R.id.backButton)).perform(click());
+
+            // Check that Activity switched back to MainActivity
+            intended(hasComponent(MainActivity.class.getName()));
+
+            // Check to see if all cities have remained consistent in MainActivity
+            onView(withId(R.id.cityName)).check(matches(withText(cities.get(0))));
+            onView(withId(R.id.cityName)).check(matches(withText(cities.get(1))));
+            onView(withId(R.id.cityName)).check(matches(withText(cities.get(2))));
+        }
+        onView(withId(R.id.button_clear)).perform(click());
     }
 }
