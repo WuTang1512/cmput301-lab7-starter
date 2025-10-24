@@ -79,17 +79,19 @@ public class MainActivityTest {
     public void testSwitchToShowActivity() {
         Intents.init();
         // Add a city
-        onView(withId(R.id.button_add)).perform(click());
-        onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Calgary"));
-        onView(withId(R.id.button_confirm)).perform(click());
+        try {
+            onView(withId(R.id.button_add)).perform(click());
+            onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Calgary"));
+            onView(withId(R.id.button_confirm)).perform(click());
 
-        // Click on newly created city
-        onData(is("Calgary")).inAdapterView(withId(R.id.city_list)).perform(click());
+            // Click on newly created city
+            onData(is("Calgary")).inAdapterView(withId(R.id.city_list)).perform(click());
 
-        // Checks if correctly switched to ShowActivity
-        intended(hasComponent(ShowActivity.class.getName()));
-
-        Intents.release();
+            // Checks if correctly switched to ShowActivity
+            intended(hasComponent(ShowActivity.class.getName()));
+        } finally {
+            Intents.release();
+        }
     }
 
     @Test
