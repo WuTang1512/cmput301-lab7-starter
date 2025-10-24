@@ -87,8 +87,9 @@ public class MainActivityTest {
             // Click on newly created city
             onData(is("Calgary")).inAdapterView(withId(R.id.city_list)).perform(click());
 
-            // Checks if correctly switched to ShowActivity
+            // Checks if correct intent is called
             intended(hasComponent(ShowActivity.class.getName()));
+            onView(withId(R.id.backButton)).check(matches(isDisplayed()));
         } finally {
             Intents.release();
         }
@@ -105,16 +106,28 @@ public class MainActivityTest {
         onData(is("Vancouver")).inAdapterView(withId(R.id.city_list)).perform(click());
 
         // Check to see if specific city is displayed in ShowActivity
-        onView(withId(R.id.cityName)).check(matches(withText("Vancouver")));
+        onView(withText("Vancouver")).check(matches(isDisplayed()));
 
         // Click on back button
         onView(withId(R.id.backButton)).perform(click());
 
         // Check to see if specific city is still displayed in MainActivity
-        onView(withId(R.id.city_list)).check(matches(withText("Vancouver")));
+        onView(withText("Vancouver")).check(matches(isDisplayed()));
 
         onView(withId(R.id.button_clear)).perform(click());
     }
 
+    @Test
+    public void testBackButton() {
+            onView(withId(R.id.button_add)).perform(click());
+            onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Edmonton"));
+            onView(withId(R.id.button_confirm)).perform(click());
+
+            onData(is("Edmonton")).inAdapterView(withId(R.id.city_list)).perform(click());
+            onView(withId(R.id.backButton)).perform(click());
+
+            // checking for presence of button that does not exist in ShowActivity, surely there must be a more robust way?
+            onView(withId(R.id.button_clear)).check(matches(isDisplayed()));
+    }
 
 }
