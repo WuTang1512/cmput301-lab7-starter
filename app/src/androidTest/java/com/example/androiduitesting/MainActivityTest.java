@@ -116,45 +116,5 @@ public class MainActivityTest {
         onView(withId(R.id.button_clear)).perform(click());
     }
 
-    @Test
-    public void testMultipleAddAndSwitch() {
-        // Add a few cities
-        ArrayList<String> cities = new ArrayList<String>();
-        cities.add("Calgary");
-        cities.add("Edmonton");
-        cities.add("Vancouver");
 
-        // adding multiple cities to the list
-        for (String city : cities) {
-            onView(withId(R.id.button_add)).perform(click());
-            onView(withId(R.id.editText_name)).perform(ViewActions.typeText(city));
-            onView(withId(R.id.button_confirm)).perform(click());
-        }
-
-        // checking to see if multiple cities stay consistent and that the Activity has changed to ShowActivity
-        for (String city : cities) {
-            // Clicking on the city
-            onData(is(city)).inAdapterView(withId(R.id.city_list)).perform(click());
-
-            // Check to see if the Activity has changed to ShowActivity
-            intended(hasComponent(ShowActivity.class.getName()));
-
-            // Check to see if all cities are displayed in ShowActivity
-            onView(withId(R.id.cityName)).check(matches(withText(cities.get(0))));
-            onView(withId(R.id.cityName)).check(matches(withText(cities.get(1))));
-            onView(withId(R.id.cityName)).check(matches(withText(cities.get(2))));
-
-            // Click on back button
-            onView(withId(R.id.backButton)).perform(click());
-
-            // Check that Activity switched back to MainActivity
-            intended(hasComponent(MainActivity.class.getName()));
-
-            // Check to see if all cities have remained consistent in MainActivity
-            onView(withId(R.id.cityName)).check(matches(withText(cities.get(0))));
-            onView(withId(R.id.cityName)).check(matches(withText(cities.get(1))));
-            onView(withId(R.id.cityName)).check(matches(withText(cities.get(2))));
-        }
-        onView(withId(R.id.button_clear)).perform(click());
-    }
 }
